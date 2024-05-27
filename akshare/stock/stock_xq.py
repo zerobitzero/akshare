@@ -13,12 +13,14 @@ import requests
 
 
 def stock_individual_spot_xq(
+    headers: dict,
     symbol: str = "SH600000",
     timeout: float = None,
 ) -> pd.DataFrame:
     """
     雪球-行情中心-个股
     https://xueqiu.com/S/SH600000
+    :param headers: 请求头
     :param symbol: 证券代码，可以是 A 股代码，A 股场内基金代码，A 股指数，美股代码, 美股指数
     :type symbol: str
     :param timeout: choice of None or a positive float number
@@ -27,10 +29,6 @@ def stock_individual_spot_xq(
     :rtype: pandas.DataFrame
     """
     session = requests.Session()
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/78.0.3904.108 Safari/537.36"
-    }
     session.get(url="https://xueqiu.com", headers=headers)
     url = f"https://stock.xueqiu.com/v5/stock/quote.json?symbol={symbol}&extend=detail"
     r = session.get(url, headers=headers, timeout=timeout)
@@ -78,6 +76,7 @@ def stock_individual_spot_xq(
         "turnover_rate": "周转率",
         "unit_nav": "单位净值",
         "volume": "成交量",
+        "time": "时间戳",
     }
     json_data = r.json()["data"]["quote"]
     temp_df = pd.json_normalize(json_data)

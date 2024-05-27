@@ -9,6 +9,7 @@ https://finance.sina.com.cn/realstock/company/sh689009/nc.shtml
 import json
 import re
 
+import numpy as np
 import pandas as pd
 import requests
 from py_mini_racer import py_mini_racer
@@ -182,9 +183,12 @@ def stock_zh_a_daily(
     data_df = pd.DataFrame(dict_list)
     data_df.index = pd.to_datetime(data_df["date"]).dt.date
     del data_df["date"]
+    preclose = np.nan
     try:
+        if 'prevclose' in data_df.columns:
+            preclose = data_df['prevclose'].iloc[0]
         del data_df["prevclose"]
-    except:  # noqa: E722
+    except:
         pass
     try:
         del data_df["postVol"]
@@ -236,7 +240,7 @@ def stock_zh_a_daily(
         temp_df.drop_duplicates(inplace=True)
         temp_df.reset_index(inplace=True)
         temp_df["date"] = pd.to_datetime(temp_df["date"], errors="coerce").dt.date
-        return temp_df
+        return temp_df, preclose
     if adjust == "hfq":
         res = requests.get(zh_sina_a_stock_hfq_url.format(symbol))
         hfq_factor_df = pd.DataFrame(
@@ -279,7 +283,7 @@ def stock_zh_a_daily(
         temp_df.dropna(inplace=True)
         temp_df.reset_index(inplace=True)
         temp_df["date"] = pd.to_datetime(temp_df["date"], errors="coerce").dt.date
-        return temp_df
+        return temp_df, preclose
 
     if adjust == "qfq":
         res = requests.get(zh_sina_a_stock_qfq_url.format(symbol))
@@ -323,7 +327,7 @@ def stock_zh_a_daily(
         temp_df.dropna(inplace=True)
         temp_df.reset_index(inplace=True)
         temp_df["date"] = pd.to_datetime(temp_df["date"], errors="coerce").dt.date
-        return temp_df
+        return temp_df, preclose
 
 
 def stock_zh_a_cdr_daily(
